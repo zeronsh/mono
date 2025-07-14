@@ -1,8 +1,7 @@
 import { type db, schema } from '.';
-// import { ThreadMessage } from '@/lib/types';
 import { and, eq, gt, not } from 'drizzle-orm';
-
-type ThreadMessage = any;
+import { type ThreadMessage } from '@mono/ai/types';
+import { nanoid } from '@mono/ai/utils';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Database = typeof db | Transaction;
@@ -138,4 +137,56 @@ export async function getThreadByStreamId(db: Database, streamId: string) {
     });
 
     return thread;
+}
+
+export async function createSettings(db: Database, args: { userId: string }) {
+    return await db
+        .insert(schema.setting)
+        .values({
+            id: nanoid(),
+            userId: args.userId,
+            mode: 'dark',
+            theme: 'default',
+            modelId: 'gpt-4o-mini',
+        })
+        .returning();
+}
+
+export async function getSettingsByUserId(db: Database, userId: string) {
+    return await db.query.setting.findFirst({
+        where: (setting, { eq }) => eq(setting.userId, userId),
+    });
+}
+
+export async function updateSettings(
+    db: Database,
+    args: { userId: string; settings: Partial<typeof schema.setting.$inferSelect> }
+) {
+    return await db
+        .update(schema.setting)
+        .set(args.settings)
+        .where(eq(schema.setting.userId, args.userId))
+        .returning();
+}
+
+export async function transferChatsFromAnonymousToUser(
+    db: Database,
+    args: { anonymousUserId: string; userId: string }
+) {
+    return await db
+        .update(schema.thread)
+        .set({ userId: args.userId })
+        .where(eq(schema.thread.userId, args.anonymousUserId))
+        .returning();
+}
+
+export async function transferMessagesFromAnonymousToUser(
+    db: Database,
+    args: { anonymousUserId: string; userId: string }
+) {
+    return await db
+        .update(schema.message)
+        .set({ userId: args.userId })
+        .where(eq(schema.message.userId, args.anonymousUserId))
+        .returning();
 }

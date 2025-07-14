@@ -5,7 +5,7 @@
         "env": "dotenvx run -f ../../.env --",
         "build": "tsup",
         "dev": "tsup --watch",
-        "dev:zero": "pnpm env npx zero-cache-dev -p src/zero/index.ts "
+        "dev:zero": "pnpm run env npx zero-cache-dev -p src/zero/index.ts "
     },
     "dependencies": {
         "@mono/database": "workspace:*",
@@ -13,6 +13,7 @@
         "tsup": "^8.5.0"
     },
     "devDependencies": {
+        "@dotenvx/dotenvx": "^1.47.5",
         "@types/bun": "latest"
     },
     "peerDependencies": {

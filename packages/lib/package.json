@@ -1,0 +1,48 @@
+{
+    "name": "@mono/lib",
+    "type": "module",
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch"
+    },
+    "devDependencies": {
+        "@t3-oss/env-core": "^0.13.8",
+        "@types/bun": "latest",
+        "tsup": "^8.5.0",
+        "zod": "^4.0.5"
+    },
+    "peerDependencies": {
+        "@t3-oss/env-core": "^0.13.8",
+        "typescript": "^5",
+        "zod": "^4.0.5"
+    },
+    "exports": {
+        "./chat": {
+            "types": "./dist/chat.d.cts",
+            "import": "./dist/chat.js",
+            "require": "./dist/chat.cjs"
+        },
+        "./auth-client": {
+            "types": "./dist/auth-client.d.cts",
+            "import": "./dist/auth-client.js",
+            "require": "./dist/auth-client.cjs"
+        },
+        "./auth": {
+            "types": "./dist/auth.d.cts",
+            "import": "./dist/auth.js",
+            "require": "./dist/auth.cjs"
+        },
+        "./env": {
+            "types": "./dist/env.d.cts",
+            "import": "./dist/env.js",
+            "require": "./dist/env.cjs"
+        }
+    },
+    "dependencies": {
+        "@mono/ai": "workspace:*",
+        "@mono/database": "workspace:*",
+        "ai": "5.0.0-beta.16",
+        "better-auth": "^1.2.12",
+        "resumable-stream": "^2.2.1"
+    }
+}

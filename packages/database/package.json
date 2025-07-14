@@ -6,9 +6,9 @@
         "env": "dotenvx run -f ../../.env --",
         "build": "tsup",
         "dev": "tsup --watch",
-        "push": "pnpm env npx drizzle-kit push",
-        "generate": "pnpm env npx drizzle-kit generate",
-        "migrate": "pnpm env npx drizzle-kit migrate",
+        "push": "pnpm run env npx drizzle-kit push",
+        "generate": "pnpm run env npx drizzle-kit generate",
+        "migrate": "pnpm run env npx drizzle-kit migrate",
         "generate:zero": "drizzle-zero generate --format --output ./src/zero.ts"
     },
     "devDependencies": {
@@ -19,6 +19,7 @@
         "typescript": "^5"
     },
     "dependencies": {
+        "@dotenvx/dotenvx": "^1.47.5",
         "@mono/ai": "workspace:*",
         "@t3-oss/env-core": "^0.13.8",
         "drizzle-orm": "^0.44.2",

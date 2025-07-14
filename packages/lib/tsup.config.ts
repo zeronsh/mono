@@ -2,10 +2,10 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
     entry: {
-        index: './src/index.ts',
-        react: './src/react.tsx',
-        utils: './src/utils.ts',
-        types: './src/types.ts',
+        chat: './src/chat.ts',
+        'auth-client': './src/auth-client.ts',
+        auth: './src/auth.ts',
+        env: './src/env.ts',
     },
     format: ['cjs', 'esm'],
     dts: true,

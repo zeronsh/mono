@@ -7,21 +7,53 @@
     },
     "devDependencies": {
         "@types/bun": "latest",
-        "tsup": "^8.5.0"
+        "@types/react": "^19.1.8",
+        "@uidotdev/usehooks": "^2.4.1",
+        "effect": "^3.16.13",
+        "nanoid": "^5.1.5",
+        "react": "^19.1.0",
+        "resumable-stream": "^2.2.1",
+        "tsup": "^8.5.0",
+        "zod": "^4.0.5"
     },
     "peerDependencies": {
-        "typescript": "^5"
+        "@types/react": "^19.1.8",
+        "@uidotdev/usehooks": "^2.4.1",
+        "effect": "^3.16.13",
+        "nanoid": "^5.1.5",
+        "react": "^19.1.0",
+        "resumable-stream": "^2.2.1",
+        "typescript": "^5",
+        "zod": "^4.0.5"
     },
     "dependencies": {
         "@ai-sdk/react": "2.0.0-beta.16",
         "ai": "5.0.0-beta.16",
         "tsup": "^8.5.0"
     },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.cts",
     "exports": {
+        ".": {
+            "types": "./dist/index.d.cts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
         "./types": {
             "types": "./dist/types.d.cts",
             "import": "./dist/types.js",
             "require": "./dist/types.cjs"
+        },
+        "./react": {
+            "types": "./dist/react.d.cts",
+            "import": "./dist/react.js",
+            "require": "./dist/react.cjs"
+        },
+        "./utils": {
+            "types": "./dist/utils.d.cts",
+            "import": "./dist/utils.js",
+            "require": "./dist/utils.cjs"
         }
     }
 }
