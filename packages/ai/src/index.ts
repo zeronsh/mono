@@ -343,6 +343,15 @@ export function createResumeStreamResponse(options: CreateResumeStreamOptions) {
                 return stream;
             },
             catch: error => {
+                if (error instanceof AIError) {
+                    return new InternalError({
+                        code: error.code,
+                        message: error.message,
+                        metadata: error.metadata,
+                        cause: error.cause,
+                        status: error.status,
+                    });
+                }
                 return new InternalError({
                     code: 'UnexpectedError',
                     message: 'Unexpected error while resuming the stream',
