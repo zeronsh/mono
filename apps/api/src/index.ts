@@ -4,6 +4,11 @@ import { auth } from '@zeron/lib/auth';
 
 const server = serve({
     routes: {
+        '/api/health': {
+            GET: () => {
+                return new Response('OK');
+            },
+        },
         '/api/chat': {
             POST: request => {
                 return handleThreadPostRequest(request);

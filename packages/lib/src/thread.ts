@@ -59,6 +59,7 @@ async function prepareThread(args: {
 
         if (thread.status === 'streaming') {
             throw new ThreadError('ThreadAlreadyStreaming', {
+                status: 400,
                 metadata: {
                     threadId: args.threadId,
                 },
@@ -67,6 +68,7 @@ async function prepareThread(args: {
 
         if (thread.userId !== args.userId) {
             throw new ThreadError('NotAuthorized', {
+                status: 403,
                 message: 'User is not the owner of the thread',
                 metadata: {
                     threadId: args.threadId,
@@ -208,7 +210,9 @@ export function handleThreadPostRequest(request: Bun.BunRequest<'/api/chat'>) {
             });
 
             if (!session) {
-                throw new ThreadError('NotAuthorized');
+                throw new ThreadError('NotAuthorized', {
+                    status: 401,
+                });
             }
 
             const streamId = nanoid();
@@ -296,7 +300,9 @@ export function handleThreadResumeGetRequest(
             });
 
             if (!session) {
-                throw new ThreadError('NotAuthorized');
+                throw new ThreadError('NotAuthorized', {
+                    status: 401,
+                });
             }
 
             const streamId = await prepareResumeThread({
