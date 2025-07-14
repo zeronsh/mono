@@ -1,0 +1,57 @@
+{
+    "name": "@mono/database",
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "env": "dotenvx run -f ../../.env --",
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "push": "pnpm env npx drizzle-kit push",
+        "generate": "pnpm env npx drizzle-kit generate",
+        "migrate": "pnpm env npx drizzle-kit migrate",
+        "generate:zero": "drizzle-zero generate --format --output ./src/zero.ts"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "drizzle-kit": "^0.31.4"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "drizzle-orm": "^0.44.2",
+        "drizzle-zero": "^0.12.0",
+        "pg": "^8.16.3",
+        "tsup": "^8.5.0",
+        "zod": "^4.0.5",
+        "@mono/ai": "workspace:*"
+    },
+    "files": [
+        "dist"
+    ],
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.cts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.cts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./schema": {
+            "types": "./dist/schema.d.cts",
+            "import": "./dist/schema.js",
+            "require": "./dist/schema.cjs"
+        },
+        "./queries": {
+            "types": "./dist/queries.d.cts",
+            "import": "./dist/queries.js",
+            "require": "./dist/queries.cjs"
+        },
+        "./zero": {
+            "types": "./dist/zero.d.cts",
+            "import": "./dist/zero.js",
+            "require": "./dist/zero.cjs"
+        }
+    }
+}

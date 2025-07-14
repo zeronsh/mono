@@ -1,0 +1,50 @@
+{
+    "name": "@mono/sync",
+    "type": "module",
+    "scripts": {
+        "env": "dotenvx run -f ../../.env --",
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "dev:zero": "pnpm env npx zero-cache-dev -p src/zero/index.ts "
+    },
+    "dependencies": {
+        "@mono/database": "workspace:*",
+        "@rocicorp/zero": "^0.21.2025070200",
+        "tsup": "^8.5.0"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "drizzle-zero": "^0.12.0"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "files": [
+        "dist"
+    ],
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.cts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.cts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./permissions": {
+            "types": "./dist/permissions.d.cts",
+            "import": "./dist/permissions.js",
+            "require": "./dist/permissions.cjs"
+        },
+        "./schema": {
+            "types": "./dist/schema.d.cts",
+            "import": "./dist/schema.js",
+            "require": "./dist/schema.cjs"
+        },
+        "./types": {
+            "types": "./dist/types.d.cts",
+            "import": "./dist/types.js",
+            "require": "./dist/types.cjs"
+        }
+    }
+}
