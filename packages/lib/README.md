@@ -1,4 +1,4 @@
-# @mono/services
+# @zeron/services
 
 To install dependencies:
 

@@ -1,8 +1,9 @@
 {
-    "name": "@mono/lib",
+    "name": "@zeron/lib",
     "type": "module",
     "scripts": {
         "build": "tsup",
+        "build:dev": "tsup",
         "dev": "tsup --watch"
     },
     "devDependencies": {
@@ -39,8 +40,8 @@
         }
     },
     "dependencies": {
-        "@mono/ai": "workspace:*",
-        "@mono/database": "workspace:*",
+        "@zeron/ai": "workspace:*",
+        "@zeron/database": "workspace:*",
         "ai": "5.0.0-beta.16",
         "better-auth": "^1.2.12",
         "resumable-stream": "^2.2.1"

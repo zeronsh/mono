@@ -1,12 +1,12 @@
 import z from 'zod';
 import { serve } from 'bun';
 import { smoothStream } from 'ai';
-import type { ThreadMessage } from '@mono/ai/types';
+import type { ThreadMessage } from '@zeron/ai/types';
 import {
     convertUIMessagesToModelMessages,
     createResumeStreamResponse,
     createUIMessageStreamResponse,
-} from '@mono/ai';
+} from '@zeron/ai';
 import {
     ThreadError,
     generateThreadTitle,
@@ -14,9 +14,9 @@ import {
     prepareThread,
     saveMessageAndResetThreadStatus,
     streamContext,
-} from '@mono/lib/thread';
-import { nanoid } from '@mono/ai/utils';
-import { auth } from '@mono/lib/auth';
+} from '@zeron/lib/thread';
+import { nanoid } from '@zeron/ai/utils';
+import { auth } from '@zeron/lib/auth';
 
 const server = serve({
     routes: {
@@ -138,6 +138,14 @@ const server = serve({
                         return streamId;
                     },
                 });
+            },
+        },
+        '/api/auth/*': {
+            POST: request => {
+                return auth.handler(request);
+            },
+            GET: request => {
+                return auth.handler(request);
             },
         },
     },

@@ -1,7 +1,7 @@
 import { type db, schema } from '.';
 import { and, eq, gt, not } from 'drizzle-orm';
-import { type ThreadMessage } from '@mono/ai/types';
-import { nanoid } from '@mono/ai/utils';
+import { type ThreadMessage } from '@zeron/ai/types';
+import { nanoid } from '@zeron/ai/utils';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Database = typeof db | Transaction;

@@ -1,14 +1,15 @@
 {
-    "name": "@mono/sync",
+    "name": "@zeron/sync",
     "type": "module",
     "scripts": {
         "env": "dotenvx run -f ../../.env --",
         "build": "tsup",
+        "build:dev": "tsup",
         "dev": "tsup --watch",
         "dev:zero": "pnpm run env npx zero-cache-dev -p src/zero/index.ts "
     },
     "dependencies": {
-        "@mono/database": "workspace:*",
+        "@zeron/database": "workspace:*",
         "@rocicorp/zero": "^0.21.2025070200",
         "tsup": "^8.5.0"
     },

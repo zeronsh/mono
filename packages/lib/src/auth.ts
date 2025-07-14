@@ -1,5 +1,5 @@
-import { db, schema } from '@mono/database';
-import * as queries from '@mono/database/queries';
+import { db, schema } from '@zeron/database';
+import * as queries from '@zeron/database/queries';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { anonymous, jwt, magicLink } from 'better-auth/plugins';

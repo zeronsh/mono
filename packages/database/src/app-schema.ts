@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { index, jsonb, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import type { Capability, ThreadMessage } from '@mono/ai/types';
+import type { Capability, ThreadMessage } from '@zeron/ai/types';
 import { user } from './auth-schema';
 
 export const message = pgTable('message', {

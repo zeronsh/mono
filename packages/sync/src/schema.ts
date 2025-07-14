@@ -1,3 +1,3 @@
-import { schema } from '@mono/database/zero';
+import { schema } from '@zeron/database/zero';
 export { schema };
 export type Schema = typeof schema;

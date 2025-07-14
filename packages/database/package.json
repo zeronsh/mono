@@ -1,10 +1,11 @@
 {
-    "name": "@mono/database",
+    "name": "@zeron/database",
     "version": "0.0.1",
     "type": "module",
     "scripts": {
         "env": "dotenvx run -f ../../.env --",
         "build": "tsup",
+        "build:dev": "tsup",
         "dev": "tsup --watch",
         "push": "pnpm run env npx drizzle-kit push",
         "generate": "pnpm run env npx drizzle-kit generate",
@@ -20,7 +21,7 @@
     },
     "dependencies": {
         "@dotenvx/dotenvx": "^1.47.5",
-        "@mono/ai": "workspace:*",
+        "@zeron/ai": "workspace:*",
         "@t3-oss/env-core": "^0.13.8",
         "drizzle-orm": "^0.44.2",
         "drizzle-zero": "^0.12.0",

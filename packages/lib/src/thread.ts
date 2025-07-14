@@ -1,7 +1,7 @@
-import { AIError } from '@mono/ai';
-import { ThreadMessage } from '@mono/ai/types';
-import { db } from '@mono/database';
-import * as queries from '@mono/database/queries';
+import { AIError } from '@zeron/ai';
+import { ThreadMessage } from '@zeron/ai/types';
+import { db } from '@zeron/database';
+import * as queries from '@zeron/database/queries';
 import { convertToModelMessages, generateText } from 'ai';
 import { createResumableStreamContext } from 'resumable-stream';
 

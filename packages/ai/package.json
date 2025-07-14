@@ -1,8 +1,9 @@
 {
-    "name": "@mono/ai",
+    "name": "@zeron/ai",
     "type": "module",
     "scripts": {
         "build": "tsup",
+        "build:dev": "tsup",
         "dev": "tsup --watch"
     },
     "devDependencies": {
