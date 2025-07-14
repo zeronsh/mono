@@ -5,14 +5,14 @@ import * as queries from '@mono/database/queries';
 import { convertToModelMessages, generateText } from 'ai';
 import { createResumableStreamContext } from 'resumable-stream';
 
-type ThreadErrorCodes =
+export type ThreadErrorCodes =
     | 'ThreadAlreadyStreaming'
     | 'ThreadNotFound'
     | 'StreamNotFound'
     | 'NotAuthorized'
     | 'ModelNotFound';
 
-class ThreadError extends AIError<ThreadErrorCodes> {}
+export class ThreadError extends AIError<ThreadErrorCodes> {}
 
 export const streamContext = createResumableStreamContext({
     waitUntil: promise => promise,

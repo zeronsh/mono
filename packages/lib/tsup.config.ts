@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
     entry: {
-        chat: './src/chat.ts',
+        thread: './src/thread.ts',
         'auth-client': './src/auth-client.ts',
         auth: './src/auth.ts',
         env: './src/env.ts',

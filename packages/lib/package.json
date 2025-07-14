@@ -17,10 +17,10 @@
         "zod": "^4.0.5"
     },
     "exports": {
-        "./chat": {
-            "types": "./dist/chat.d.cts",
-            "import": "./dist/chat.js",
-            "require": "./dist/chat.cjs"
+        "./thread": {
+            "types": "./dist/thread.d.cts",
+            "import": "./dist/thread.js",
+            "require": "./dist/thread.cjs"
         },
         "./auth-client": {
             "types": "./dist/auth-client.d.cts",
