@@ -8,7 +8,7 @@
     },
     "devDependencies": {
         "@types/bun": "latest",
-        "@types/react": "^19.1.8",
+        "@types/react": "~19.0.10",
         "@uidotdev/usehooks": "^2.4.1",
         "effect": "^3.16.13",
         "nanoid": "^5.1.5",
@@ -18,11 +18,11 @@
         "zod": "^4.0.5"
     },
     "peerDependencies": {
-        "@types/react": "^19.1.8",
+        "@types/react": "~19.0.10",
         "@uidotdev/usehooks": "^2.4.1",
         "effect": "^3.16.13",
         "nanoid": "^5.1.5",
-        "react": "^19.1.0",
+        "react": "19.0.0",
         "resumable-stream": "^2.2.1",
         "typescript": "^5",
         "zod": "^4.0.5"

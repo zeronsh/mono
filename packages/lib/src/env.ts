@@ -5,6 +5,8 @@ export const env = createEnv({
     server: {
         ZERO_UPSTREAM_DB: z.url(),
         AI_GATEWAY_API_KEY: z.string().min(1),
+        APP_URL: z.url(),
+        APP_SCHEME: z.string().min(1),
     },
     clientPrefix: 'EXPO_PUBLIC_',
     client: {

@@ -3,12 +3,14 @@ import * as queries from '@zeron/database/queries';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { anonymous, jwt, magicLink } from 'better-auth/plugins';
+import { env } from './env';
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
         provider: 'pg',
         schema,
     }),
+    trustedOrigins: [env.APP_SCHEME, env.APP_URL],
     databaseHooks: {
         user: {
             create: {

@@ -4,6 +4,7 @@ import {
     createResumeStreamResponse,
     createUIMessageStreamResponse,
 } from '@zeron/ai';
+import { nanoid } from '@zeron/ai/utils';
 import { ThreadMessage } from '@zeron/ai/types';
 import { db } from '@zeron/database';
 import * as queries from '@zeron/database/queries';
@@ -11,7 +12,6 @@ import { convertToModelMessages, generateText, smoothStream } from 'ai';
 import { createResumableStreamContext } from 'resumable-stream';
 import z from 'zod';
 import { auth } from './auth';
-import { nanoid } from '@zeron/ai/utils';
 
 type ThreadErrorCodes =
     | 'ThreadAlreadyStreaming'
@@ -68,7 +68,6 @@ async function prepareThread(args: {
 
         if (thread.userId !== args.userId) {
             throw new ThreadError('NotAuthorized', {
-                status: 403,
                 message: 'User is not the owner of the thread',
                 metadata: {
                     threadId: args.threadId,
