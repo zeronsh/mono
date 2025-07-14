@@ -194,7 +194,7 @@ async function saveMessageAndResetThreadStatus({
     });
 }
 
-export function createThreadPostHandler(request: Bun.BunRequest<'/api/chat'>) {
+export function handleThreadPostRequest(request: Bun.BunRequest<'/api/chat'>) {
     return createUIMessageStreamResponse<ThreadMessage>()({
         request,
         schema: z.object({
@@ -283,7 +283,9 @@ export function createThreadPostHandler(request: Bun.BunRequest<'/api/chat'>) {
     });
 }
 
-export function createThreadGetHandler(request: Bun.BunRequest<'/api/chat/:threadId/stream'>) {
+export function handleThreadResumeGetRequest(
+    request: Bun.BunRequest<'/api/chat/:threadId/stream'>
+) {
     return createResumeStreamResponse({
         streamContext,
         onPrepare: async () => {

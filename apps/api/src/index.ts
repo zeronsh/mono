@@ -1,17 +1,17 @@
 import { serve } from 'bun';
-import { createThreadPostHandler, createThreadGetHandler } from '@zeron/lib/thread';
+import { handleThreadPostRequest, handleThreadResumeGetRequest } from '@zeron/lib/thread';
 import { auth } from '@zeron/lib/auth';
 
 const server = serve({
     routes: {
         '/api/chat': {
             POST: request => {
-                return createThreadPostHandler(request);
+                return handleThreadPostRequest(request);
             },
         },
         '/api/chat/:threadId/stream': {
             GET: request => {
-                return createThreadGetHandler(request);
+                return handleThreadResumeGetRequest(request);
             },
         },
         '/api/auth/*': {
