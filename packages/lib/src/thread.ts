@@ -1,24 +1,32 @@
-import { AIError } from '@zeron/ai';
+import {
+    AIError,
+    convertUIMessagesToModelMessages,
+    createResumeStreamResponse,
+    createUIMessageStreamResponse,
+} from '@zeron/ai';
 import { ThreadMessage } from '@zeron/ai/types';
 import { db } from '@zeron/database';
 import * as queries from '@zeron/database/queries';
-import { convertToModelMessages, generateText } from 'ai';
+import { convertToModelMessages, generateText, smoothStream } from 'ai';
 import { createResumableStreamContext } from 'resumable-stream';
+import z from 'zod';
+import { auth } from './auth';
+import { nanoid } from '@zeron/ai/utils';
 
-export type ThreadErrorCodes =
+type ThreadErrorCodes =
     | 'ThreadAlreadyStreaming'
     | 'ThreadNotFound'
     | 'StreamNotFound'
     | 'NotAuthorized'
     | 'ModelNotFound';
 
-export class ThreadError extends AIError<ThreadErrorCodes> {}
+class ThreadError extends AIError<ThreadErrorCodes> {}
 
-export const streamContext = createResumableStreamContext({
+const streamContext = createResumableStreamContext({
     waitUntil: promise => promise,
 });
 
-export async function prepareThread(args: {
+async function prepareThread(args: {
     userId: string;
     threadId: string;
     streamId: string;
@@ -107,7 +115,7 @@ export async function prepareThread(args: {
     });
 }
 
-export async function prepareResumeThread(args: { threadId: string; userId: string }) {
+async function prepareResumeThread(args: { threadId: string; userId: string }) {
     const thread = await queries.getThreadById(db, args.threadId);
 
     if (!thread) {
@@ -143,7 +151,7 @@ export async function prepareResumeThread(args: { threadId: string; userId: stri
     return thread.streamId;
 }
 
-export async function generateThreadTitle(threadId: string, message: ThreadMessage) {
+async function generateThreadTitle(threadId: string, message: ThreadMessage) {
     const { text } = await generateText({
         model: 'google/gemini-2.0-flash-001',
         system: `\nc
@@ -161,7 +169,7 @@ export async function generateThreadTitle(threadId: string, message: ThreadMessa
     });
 }
 
-export async function saveMessageAndResetThreadStatus({
+async function saveMessageAndResetThreadStatus({
     threadId,
     userId,
     message,
@@ -183,5 +191,118 @@ export async function saveMessageAndResetThreadStatus({
                 streamId: null,
             }),
         ]);
+    });
+}
+
+export function createThreadPostHandler(request: Bun.BunRequest<'/api/chat'>) {
+    return createUIMessageStreamResponse<ThreadMessage>()({
+        request,
+        schema: z.object({
+            id: z.string(),
+            modelId: z.string(),
+            message: z.any(),
+        }),
+        onPrepare: async ({ body, request }) => {
+            const session = await auth.api.getSession({
+                headers: request.headers,
+            });
+
+            if (!session) {
+                throw new ThreadError('NotAuthorized');
+            }
+
+            const streamId = nanoid();
+
+            const { history, thread, message, model } = await prepareThread({
+                streamId,
+                modelId: body.modelId,
+                userId: session.user.id,
+                threadId: body.id,
+                message: body.message,
+            });
+
+            return {
+                streamId,
+                threadId: thread.id,
+                userId: session.user.id,
+                model,
+                thread,
+                message,
+                messages: await convertUIMessagesToModelMessages(history, {
+                    supportsImages: model.capabilities.includes('vision'),
+                    supportsDocuments: model.capabilities.includes('documents'),
+                }),
+            };
+        },
+        onStream: ({ context: { messages, model } }) => {
+            return {
+                model: model.model,
+                messages,
+                temperature: 0.8,
+                experimental_transform: smoothStream({
+                    chunking: 'word',
+                }),
+            };
+        },
+        onStreamMessageMetadata: ({ part, context: { model } }) => {
+            if (part.type === 'start') {
+                return {
+                    model: {
+                        id: model.id,
+                        name: model.name,
+                        icon: model.icon,
+                    },
+                };
+            }
+        },
+        onAfterStream: async ({ context: { threadId, message, streamId, thread }, stream }) => {
+            const promises: Promise<any>[] = [];
+
+            if (!thread.title) {
+                promises.push(generateThreadTitle(threadId, message.message));
+            }
+
+            promises.push(streamContext.createNewResumableStream(streamId, () => stream));
+
+            await Promise.all(promises);
+        },
+        onStreamError: ({ error, writer }) => {
+            console.error(error);
+            writer.write({
+                type: 'data-error',
+                data: 'Error generating response.',
+            });
+        },
+        onFinish: async ({ responseMessage, context: { threadId, userId } }) => {
+            await saveMessageAndResetThreadStatus({
+                threadId,
+                userId,
+                message: responseMessage,
+            });
+        },
+    });
+}
+
+export function createThreadGetHandler(request: Bun.BunRequest<'/api/chat/:threadId/stream'>) {
+    return createResumeStreamResponse({
+        streamContext,
+        onPrepare: async () => {
+            const threadId = request.params.threadId;
+
+            const session = await auth.api.getSession({
+                headers: request.headers,
+            });
+
+            if (!session) {
+                throw new ThreadError('NotAuthorized');
+            }
+
+            const streamId = await prepareResumeThread({
+                threadId,
+                userId: session.user.id,
+            });
+
+            return streamId;
+        },
     });
 }
