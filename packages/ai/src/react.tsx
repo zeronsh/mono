@@ -108,20 +108,23 @@ export function createChatComponent<
         ));
     });
 
-    const Message = memo(function Message(props: MessageProps) {
+    const Message = memo(function Message(props: MessageProps): React.ReactNode[] {
         const { id, hasNextMessage, hasPreviousMessage } = props;
 
         const message = useChatSelector('~registerMessagesCallback', chat =>
             chat.messages.find(message => message.id === id)
         );
 
+        const children: React.ReactNode[] = [];
+
         if (!message) {
-            return null;
+            return children;
         }
 
         if (message.role === 'assistant' && message.parts.length > 0) {
-            return (
+            children.push(
                 <AssistantMessage
+                    key={message.id}
                     message={message}
                     hasNextMessage={hasNextMessage}
                     hasPreviousMessage={hasPreviousMessage}
@@ -130,34 +133,37 @@ export function createChatComponent<
         }
 
         if (message.role === 'assistant' && message.parts.length === 0) {
-            return (
+            children.push(
                 <PendingMessage
+                    key="pending-message"
                     hasNextMessage={hasNextMessage}
                     hasPreviousMessage={hasPreviousMessage}
                 />
             );
         }
 
-        if (message.role === 'user' && !props.hasNextMessage) {
-            return (
-                <Fragment>
-                    <UserMessage
-                        message={message}
-                        hasPreviousMessage={hasPreviousMessage}
-                        hasNextMessage={true}
-                    />
-                    <PendingMessage hasNextMessage={hasNextMessage} hasPreviousMessage={true} />
-                </Fragment>
+        if (message.role === 'user') {
+            children.push(
+                <UserMessage
+                    key={message.id}
+                    message={message}
+                    hasPreviousMessage={hasPreviousMessage}
+                    hasNextMessage={true}
+                />
             );
         }
 
-        return (
-            <UserMessage
-                message={message}
-                hasPreviousMessage={hasPreviousMessage}
-                hasNextMessage={hasNextMessage}
-            />
-        );
+        if (message.role === 'user' && !props.hasNextMessage) {
+            children.push(
+                <PendingMessage
+                    key="pending-message"
+                    hasNextMessage={hasNextMessage}
+                    hasPreviousMessage={true}
+                />
+            );
+        }
+
+        return children;
     });
 
     const ChatContext = createContext<ChatStore<UIMessageWithMetaData> | undefined>(undefined);
