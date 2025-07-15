@@ -6,7 +6,7 @@
         "build": "tsup",
         "build:dev": "tsup",
         "dev": "tsup --watch",
-        "dev:zero": "pnpm run env npx zero-cache-dev -p src/zero/index.ts "
+        "dev:zero": "pnpm run env npx zero-cache-dev --port 2001 -p src/index.ts "
     },
     "dependencies": {
         "@zeron/database": "workspace:*",

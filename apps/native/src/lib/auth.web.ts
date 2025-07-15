@@ -1,4 +1,4 @@
-import { env } from './env';
+import { env } from '@/lib/env';
 import { anonymousClient, magicLinkClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 

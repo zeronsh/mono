@@ -5,7 +5,7 @@ import {
     createUIMessageStreamResponse,
 } from '@zeron/ai';
 import { nanoid } from '@zeron/ai/utils';
-import { ThreadMessage } from '@zeron/ai/types';
+import type { ThreadMessage } from '@zeron/ai/types';
 import { db } from '@zeron/database';
 import * as queries from '@zeron/database/queries';
 import { convertToModelMessages, generateText, smoothStream } from 'ai';
@@ -18,7 +18,8 @@ type ThreadErrorCodes =
     | 'ThreadNotFound'
     | 'StreamNotFound'
     | 'NotAuthorized'
-    | 'ModelNotFound';
+    | 'ModelNotFound'
+    | 'MessageNotFound';
 
 class ThreadError extends AIError<ThreadErrorCodes> {}
 
@@ -54,6 +55,15 @@ async function prepareThread(args: {
             [thread] = await queries.createThread(tx, {
                 userId: args.userId,
                 threadId: args.threadId,
+            });
+        }
+
+        if (!thread) {
+            throw new ThreadError('ThreadNotFound', {
+                status: 404,
+                metadata: {
+                    threadId: args.threadId,
+                },
             });
         }
 
@@ -103,6 +113,15 @@ async function prepareThread(args: {
                     messageCreatedAt: message.createdAt,
                 }),
             ]);
+        }
+
+        if (!message) {
+            throw new ThreadError('MessageNotFound', {
+                status: 404,
+                metadata: {
+                    threadId: args.threadId,
+                },
+            });
         }
 
         const history = await queries.getThreadMessageHistory(tx, args.threadId);

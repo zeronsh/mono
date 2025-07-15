@@ -1,4 +1,4 @@
-import { useChat } from '@ai-sdk/react';
+import { useChat, Chat as ChatStore } from '@ai-sdk/react';
 import type {
     UIMessage,
     UIDataTypes,
@@ -9,7 +9,16 @@ import type {
     ChatOnErrorCallback,
     IdGenerator,
 } from 'ai';
-import { Fragment, memo, useEffect, useMemo } from 'react';
+import {
+    createContext,
+    Fragment,
+    memo,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useSyncExternalStore,
+} from 'react';
 import { useDebounce } from '@uidotdev/usehooks';
 import { nanoid } from './utils';
 
@@ -36,17 +45,13 @@ export type ChatProps<
 };
 
 export type UserMessageProps<UIMessageWithMetaData extends UIMessage = UIMessage> = {
-    status: ReturnType<typeof useChat<UIMessageWithMetaData>>['status'];
     message: UIMessageWithMetaData;
-    sendMessage: ReturnType<typeof useChat<UIMessageWithMetaData>>['sendMessage'];
     hasNextMessage: boolean;
     hasPreviousMessage: boolean;
 };
 
 export type AssistantMessageProps<UIMessageWithMetaData extends UIMessage = UIMessage> = {
-    status: ReturnType<typeof useChat<UIMessageWithMetaData>>['status'];
     message: UIMessageWithMetaData;
-    sendMessage: ReturnType<typeof useChat<UIMessageWithMetaData>>['sendMessage'];
     hasNextMessage: boolean;
     hasPreviousMessage: boolean;
 };
@@ -56,25 +61,10 @@ export type PendingMessageProps = {
     hasPreviousMessage: boolean;
 };
 
-export type PromptInputProps<UIMessageWithMetaData extends UIMessage = UIMessage> = {
-    status: ReturnType<typeof useChat<UIMessageWithMetaData>>['status'];
-    stop: ReturnType<typeof useChat<UIMessageWithMetaData>>['stop'];
-    sendMessage: ReturnType<typeof useChat<UIMessageWithMetaData>>['sendMessage'];
+type MessageProps = {
     id: string;
-};
-
-type MessageProps<UIMessageWithMetaData extends UIMessage = UIMessage> = {
-    status: ReturnType<typeof useChat<UIMessageWithMetaData>>['status'];
-    message: UIMessageWithMetaData;
-    sendMessage: ReturnType<typeof useChat<UIMessageWithMetaData>>['sendMessage'];
     hasNextMessage: boolean;
     hasPreviousMessage: boolean;
-};
-
-type MessagesProps<UIMessageWithMetaData extends UIMessage = UIMessage> = {
-    messages: UIMessageWithMetaData[];
-    status: ReturnType<typeof useChat<UIMessageWithMetaData>>['status'];
-    sendMessage: ReturnType<typeof useChat<UIMessageWithMetaData>>['sendMessage'];
 };
 
 export function createChatComponent<
@@ -90,7 +80,7 @@ export function createChatComponent<
     UserMessage: React.ComponentType<UserMessageProps<UIMessageWithMetaData>>;
     AssistantMessage: React.ComponentType<AssistantMessageProps<UIMessageWithMetaData>>;
     PendingMessage: React.ComponentType<PendingMessageProps>;
-    PromptInput: React.ComponentType<PromptInputProps<UIMessageWithMetaData>>;
+    PromptInput: React.ComponentType<any>;
     ChatContainer: React.ComponentType<any>;
     ChatContainerContent: React.ComponentType<any>;
 }) {
@@ -103,28 +93,36 @@ export function createChatComponent<
         ChatContainerContent,
     } = options;
 
-    const Messages = memo(function Messages(props: MessagesProps<UIMessageWithMetaData>) {
-        return props.messages.map((message, i) => (
+    const Messages = memo(function Messages() {
+        const messageIds = useChatSelector('~registerMessagesCallback', chat =>
+            chat.messages.map(message => message.id)
+        );
+
+        return messageIds.map((id, i) => (
             <Message
-                key={message.id}
-                status={props.status}
-                message={message}
-                sendMessage={props.sendMessage}
-                hasNextMessage={props.messages[i + 1] !== undefined}
-                hasPreviousMessage={props.messages[i - 1] !== undefined}
+                key={id}
+                id={id}
+                hasNextMessage={messageIds[i + 1] !== undefined}
+                hasPreviousMessage={messageIds[i - 1] !== undefined}
             />
         ));
     });
 
-    const Message = memo(function Message(props: MessageProps<UIMessageWithMetaData>) {
-        const { status, message, sendMessage, hasNextMessage, hasPreviousMessage } = props;
+    const Message = memo(function Message(props: MessageProps) {
+        const { id, hasNextMessage, hasPreviousMessage } = props;
+
+        const message = useChatSelector('~registerMessagesCallback', chat =>
+            chat.messages.find(message => message.id === id)
+        );
+
+        if (!message) {
+            return null;
+        }
 
         if (message.role === 'assistant' && message.parts.length > 0) {
             return (
                 <AssistantMessage
-                    status={status}
                     message={message}
-                    sendMessage={sendMessage}
                     hasNextMessage={hasNextMessage}
                     hasPreviousMessage={hasPreviousMessage}
                 />
@@ -144,9 +142,7 @@ export function createChatComponent<
             return (
                 <Fragment>
                     <UserMessage
-                        status={status}
                         message={message}
-                        sendMessage={sendMessage}
                         hasPreviousMessage={hasPreviousMessage}
                         hasNextMessage={true}
                     />
@@ -157,64 +153,90 @@ export function createChatComponent<
 
         return (
             <UserMessage
-                status={status}
                 message={message}
-                sendMessage={sendMessage}
                 hasPreviousMessage={hasPreviousMessage}
                 hasNextMessage={hasNextMessage}
             />
         );
     });
 
+    const ChatContext = createContext<ChatStore<UIMessageWithMetaData> | undefined>(undefined);
+
+    function useChatStore() {
+        const chat = useContext(ChatContext);
+        if (!chat) {
+            throw new Error('useChatStore must be used within a ChatProvider');
+        }
+        return chat;
+    }
+
+    function useChatSelector<T>(
+        key: '~registerErrorCallback' | '~registerStatusCallback' | '~registerMessagesCallback',
+        selector: (chat: ChatStore<UIMessageWithMetaData>) => T
+    ): T {
+        const chat = useChatStore();
+        return useSyncExternalStore(
+            chat[key],
+            () => selector(chat),
+            () => selector(chat)
+        );
+    }
+
+    function ChatProvider(props: {
+        children: React.ReactNode;
+        chat: ChatStore<UIMessageWithMetaData>;
+    }) {
+        return <ChatContext.Provider value={props.chat}>{props.children}</ChatContext.Provider>;
+    }
+
     function Chat(props: ChatProps<Metadata, DataParts, Tools, UIMessageWithMetaData>) {
-        const helpers = useChat<UIMessageWithMetaData>({
-            id: props.id,
-            generateId: props.generateId,
+        const ref = useRef<ChatStore<UIMessageWithMetaData>>(
+            new ChatStore({
+                id: props.id,
+                generateId: props.generateId,
+                messages: props.messages,
+                transport: props.transport,
+                onData: props.onData,
+                onFinish: props.onFinish,
+                onError: props.onError,
+            })
+        );
+
+        const chat = useChat<UIMessageWithMetaData>({
             experimental_throttle: props.experimental_throttle,
-            messages: props.messages,
-            transport: props.transport,
-            onData: props.onData,
-            onFinish: props.onFinish,
-            onError: props.onError,
+            chat: ref.current,
         });
 
-        const debouncedStatus = useDebounce(helpers.status, 100);
+        const debouncedStatus = useDebounce(chat.status, 100);
 
         useEffect(() => {
             if (debouncedStatus === 'ready' && props.messages) {
-                helpers.setMessages(props.messages);
+                chat.setMessages(props.messages);
             }
         }, [debouncedStatus, props.messages]);
 
         useEffect(() => {
-            if (props.streamId && helpers.messages && helpers.status === 'ready') {
-                const lastMessage = helpers.messages.at(-1);
+            if (props.streamId && chat.messages && chat.status === 'ready') {
+                const lastMessage = chat.messages.at(-1);
                 if (lastMessage && lastMessage.role === 'user') {
-                    helpers.resumeStream();
+                    chat.resumeStream();
                 }
             }
-        }, [props.streamId, helpers.messages, helpers.status]);
+        }, [props.streamId, chat.messages, chat.status]);
 
         return (
-            <ChatContainer>
-                <ChatContainerContent>
-                    <Messages
-                        status={helpers.status}
-                        messages={helpers.messages}
-                        sendMessage={helpers.sendMessage}
-                    />
-                </ChatContainerContent>
-                <PromptInput
-                    id={helpers.id}
-                    status={helpers.status}
-                    stop={helpers.stop}
-                    sendMessage={helpers.sendMessage}
-                />
-            </ChatContainer>
+            <ChatProvider chat={ref.current}>
+                <ChatContainer>
+                    <ChatContainerContent>
+                        <Messages />
+                    </ChatContainerContent>
+                    <PromptInput />
+                </ChatContainer>
+            </ChatProvider>
         );
     }
 
-    return memo(function ChatRoot(
+    const ChatRoot = memo(function ChatRoot(
         props: ChatProps<Metadata, DataParts, Tools, UIMessageWithMetaData>
     ) {
         const generateId = props.generateId ?? nanoid;
@@ -241,4 +263,9 @@ export function createChatComponent<
             />
         );
     });
+    return {
+        useChatStore,
+        useChatSelector,
+        Chat: ChatRoot,
+    };
 }

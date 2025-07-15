@@ -1,26 +1,22 @@
 import { serve } from 'bun';
-import { handleThreadPostRequest, handleThreadResumeGetRequest } from '@zeron/lib/thread';
-import { auth } from '@zeron/lib/auth';
+import { handleThreadPostRequest, handleThreadResumeGetRequest } from './thread';
+import { auth } from './auth';
+import { cors } from './cors';
 
 const server = serve({
     routes: {
+        '/*': {
+            OPTIONS: cors(new Response(null, { status: 200 })),
+        },
         '/api/chat': {
-            POST: request => {
-                return handleThreadPostRequest(request);
-            },
+            POST: cors(handleThreadPostRequest),
         },
         '/api/chat/:threadId/stream': {
-            GET: request => {
-                return handleThreadResumeGetRequest(request);
-            },
+            GET: cors(handleThreadResumeGetRequest),
         },
         '/api/auth/*': {
-            POST: request => {
-                return auth.handler(request);
-            },
-            GET: request => {
-                return auth.handler(request);
-            },
+            POST: cors(auth.handler),
+            GET: cors(auth.handler),
         },
     },
 });

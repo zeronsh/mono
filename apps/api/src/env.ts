@@ -8,11 +8,6 @@ export const env = createEnv({
         APP_URL: z.url(),
         APP_SCHEME: z.string().min(1),
     },
-    clientPrefix: 'EXPO_PUBLIC_',
-    client: {
-        EXPO_PUBLIC_API_URL: z.url(),
-        EXPO_PUBLIC_ZERO_URL: z.url(),
-    },
     runtimeEnv: process.env,
     emptyStringAsUndefined: true,
 });

@@ -12,7 +12,6 @@
         "@uidotdev/usehooks": "^2.4.1",
         "effect": "^3.16.13",
         "nanoid": "^5.1.5",
-        "react": "^19.1.0",
         "resumable-stream": "^2.2.1",
         "tsup": "^8.5.0",
         "zod": "^4.0.5"

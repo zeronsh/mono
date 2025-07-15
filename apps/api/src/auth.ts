@@ -11,6 +11,12 @@ export const auth = betterAuth({
         schema,
     }),
     trustedOrigins: [env.APP_SCHEME, env.APP_URL],
+    advanced: {
+        cookiePrefix: 'zeron-native',
+        crossSubDomainCookies: {
+            enabled: true,
+        },
+    },
     databaseHooks: {
         user: {
             create: {
