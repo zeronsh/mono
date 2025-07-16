@@ -243,6 +243,8 @@ export function handleThreadPostRequest(request: Bun.BunRequest<'/api/chat'>) {
                 message: body.message,
             });
 
+            console.log('history', history);
+
             return {
                 streamId,
                 threadId: thread.id,

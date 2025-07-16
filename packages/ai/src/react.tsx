@@ -11,7 +11,6 @@ import type {
 } from 'ai';
 import {
     createContext,
-    Fragment,
     memo,
     useContext,
     useEffect,
@@ -67,6 +66,44 @@ type MessageProps = {
     hasPreviousMessage: boolean;
 };
 
+const ChatContext = createContext<ChatStore<any> | undefined>(undefined);
+
+export function useChatStore() {
+    const chat = useContext(ChatContext);
+    if (!chat) {
+        throw new Error('useChatStore must be used within a ChatProvider');
+    }
+    return chat;
+}
+
+export function createChatSelector<UIMessageWithMetaData extends UIMessage = UIMessage>() {
+    return function useChatSelector<Return>(
+        key: '~registerErrorCallback' | '~registerStatusCallback' | '~registerMessagesCallback',
+        selector: (chat: ChatStore<UIMessageWithMetaData>) => Return
+    ): Return {
+        const chat = useChatStore();
+        return useSyncExternalStore(
+            chat[key],
+            () => selector(chat),
+            () => selector(chat)
+        );
+    };
+}
+
+const getMessageIds = (messages: UIMessage[]): readonly string[] => {
+    // We cache by the *references* to the message objects
+    let cache = (getMessageIds as any)._cache;
+    if (!cache) cache = (getMessageIds as any)._cache = new WeakMap();
+
+    if (cache.has(messages)) return cache.get(messages)!;
+
+    const ids = messages.map(m => m.id);
+    // freeze to guarantee no accidental mutation
+    const frozen = Object.freeze(ids) as readonly string[];
+    cache.set(messages, frozen);
+    return frozen;
+};
+
 export function createChatComponent<
     Metadata = {},
     DataParts extends UIDataTypes = UIDataTypes,
@@ -93,12 +130,14 @@ export function createChatComponent<
         ChatContainerContent,
     } = options;
 
-    const Messages = memo(function Messages() {
+    const useChatSelector = createChatSelector<UIMessageWithMetaData>();
+
+    const Messages = memo(function BaseMessages() {
         const messageIds = useChatSelector('~registerMessagesCallback', chat =>
-            chat.messages.map(message => message.id)
+            getMessageIds(chat.messages)
         );
 
-        return messageIds.map((id, i) => (
+        return messageIds.map((id, i: number) => (
             <Message
                 key={id}
                 id={id}
@@ -108,7 +147,7 @@ export function createChatComponent<
         ));
     });
 
-    const Message = memo(function Message(props: MessageProps): React.ReactNode[] {
+    const Message = memo(function BaseMessage(props: MessageProps): React.ReactNode[] {
         const { id, hasNextMessage, hasPreviousMessage } = props;
 
         const message = useChatSelector('~registerMessagesCallback', chat =>
@@ -166,36 +205,16 @@ export function createChatComponent<
         return children;
     });
 
-    const ChatContext = createContext<ChatStore<UIMessageWithMetaData> | undefined>(undefined);
-
-    function useChatStore() {
-        const chat = useContext(ChatContext);
-        if (!chat) {
-            throw new Error('useChatStore must be used within a ChatProvider');
-        }
-        return chat;
-    }
-
-    function useChatSelector<T>(
-        key: '~registerErrorCallback' | '~registerStatusCallback' | '~registerMessagesCallback',
-        selector: (chat: ChatStore<UIMessageWithMetaData>) => T
-    ): T {
-        const chat = useChatStore();
-        return useSyncExternalStore(
-            chat[key],
-            () => selector(chat),
-            () => selector(chat)
-        );
-    }
-
-    function ChatProvider(props: {
+    const ChatProvider = memo(function BaseChatProvider(props: {
         children: React.ReactNode;
         chat: ChatStore<UIMessageWithMetaData>;
     }) {
         return <ChatContext.Provider value={props.chat}>{props.children}</ChatContext.Provider>;
-    }
+    });
 
-    function Chat(props: ChatProps<Metadata, DataParts, Tools, UIMessageWithMetaData>) {
+    const Chat = memo(function BaseChat(
+        props: ChatProps<Metadata, DataParts, Tools, UIMessageWithMetaData>
+    ) {
         const ref = useRef<ChatStore<UIMessageWithMetaData>>(
             new ChatStore({
                 id: props.id,
@@ -240,9 +259,9 @@ export function createChatComponent<
                 </ChatContainer>
             </ChatProvider>
         );
-    }
+    });
 
-    const ChatRoot = memo(function ChatRoot(
+    const ChatRoot = memo(function BaseChatRoot(
         props: ChatProps<Metadata, DataParts, Tools, UIMessageWithMetaData>
     ) {
         const generateId = props.generateId ?? nanoid;
@@ -270,8 +289,6 @@ export function createChatComponent<
         );
     });
     return {
-        useChatStore,
-        useChatSelector,
         Chat: ChatRoot,
     };
 }

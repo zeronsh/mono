@@ -10,6 +10,7 @@
         "push": "pnpm run env npx drizzle-kit push",
         "generate": "pnpm run env npx drizzle-kit generate",
         "migrate": "pnpm run env npx drizzle-kit migrate",
+        "studio": "pnpm run env npx drizzle-kit studio",
         "generate:zero": "drizzle-zero generate --format --output ./src/zero.ts"
     },
     "devDependencies": {

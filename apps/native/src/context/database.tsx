@@ -79,5 +79,9 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
         );
     }
 
-    return <DatabaseContext.Provider value={zero}>{children}</DatabaseContext.Provider>;
+    return (
+        <DatabaseContext.Provider value={zero}>
+            <ZeroProvider zero={zero}>{children}</ZeroProvider>
+        </DatabaseContext.Provider>
+    );
 }

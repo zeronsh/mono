@@ -5,18 +5,18 @@ import { cors } from './cors';
 
 const server = serve({
     routes: {
-        '/*': {
-            OPTIONS: cors(new Response(null, { status: 200 })),
-        },
         '/api/chat': {
             POST: cors(handleThreadPostRequest),
+            OPTIONS: cors(new Response(null, { status: 200 })),
         },
         '/api/chat/:threadId/stream': {
             GET: cors(handleThreadResumeGetRequest),
+            OPTIONS: cors(new Response(null, { status: 200 })),
         },
         '/api/auth/*': {
-            POST: cors(auth.handler),
             GET: cors(auth.handler),
+            POST: cors(auth.handler),
+            OPTIONS: cors(new Response(null, { status: 200 })),
         },
     },
 });

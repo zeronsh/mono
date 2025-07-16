@@ -15,6 +15,7 @@
     "dependencies": {
         "@expo/vector-icons": "^14.0.0",
         "@react-navigation/native": "^7.0.3",
+        "@rocicorp/zero": "^0.21.2025070200",
         "@zeron/ai": "workspace:*",
         "@zeron/sync": "workspace:*",
         "better-auth": "^1.2.12",
@@ -31,12 +32,14 @@
         "react-native": "0.79.5",
         "react-native-edge-to-edge": "1.6.0",
         "react-native-gesture-handler": "~2.24.0",
+        "react-native-get-random-values": "~1.11.0",
         "react-native-nitro-modules": "0.25.2",
         "react-native-reanimated": "~3.17.4",
         "react-native-safe-area-context": "5.4.0",
         "react-native-screens": "~4.11.1",
         "react-native-unistyles": "3.0.0-rc.4",
-        "react-native-web": "^0.20.0"
+        "react-native-web": "^0.20.0",
+        "ts-pattern": "^5.7.1"
     },
     "devDependencies": {
         "@babel/core": "^7.20.0",

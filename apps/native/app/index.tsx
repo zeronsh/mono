@@ -1,27 +1,42 @@
-import { Stack, Link } from 'expo-router';
+import { Stack } from 'expo-router';
 
-import { StyleSheet } from 'react-native-unistyles';
-
-import { Button } from '@/components/Button';
 import { Container } from '@/components/Container';
-import { ScreenContent } from '@/components/ScreenContent';
+import { Thread } from '@/components/thread';
+import { DefaultChatTransport } from 'ai';
+import { env } from '@/lib/env';
+import { useDatabase } from '@/context/database';
+import { useSettings } from '@/hooks/use-settings';
 
 export default function Home() {
+    useSettings();
+    const db = useDatabase();
+
     return (
         <>
             <Stack.Screen options={{ title: 'Home' }} />
             <Container>
-                <ScreenContent path="app/index.tsx" title="Home"></ScreenContent>
-                <Link href={{ pathname: '/details', params: { name: 'Dan' } }} asChild>
-                    <Button title="Show Details" style={styles.button} />
-                </Link>
+                <Thread
+                    transport={
+                        new DefaultChatTransport({
+                            api: env.EXPO_PUBLIC_API_URL + '/api/chat',
+                            credentials: 'include',
+                            prepareSendMessagesRequest: async ({ id, messages }) => {
+                                const settings = db.query.setting
+                                    .where('userId', '=', db.userID)
+                                    .one()
+                                    .materialize();
+                                return {
+                                    body: {
+                                        id,
+                                        message: messages.at(-1),
+                                        modelId: settings.data?.modelId,
+                                    },
+                                };
+                            },
+                        })
+                    }
+                />
             </Container>
         </>
     );
 }
-
-const styles = StyleSheet.create(theme => ({
-    button: {
-        marginHorizontal: theme.margins.xl,
-    },
-}));
